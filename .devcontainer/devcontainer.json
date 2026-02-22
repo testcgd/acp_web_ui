@@ -1,0 +1,50 @@
+{
+  "name": "acp-demo-dev",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "features": {
+    "ghcr.io/devcontainers/features/github-cli:1": {},
+    "./features/claude-code": {
+      "version": "latest"
+    }
+  },
+  "remoteUser": "dev",
+  "workspaceFolder": "/workspaces/acp_demo",
+  "runArgs": [
+    "--init",
+    "--publish=0.0.0.0:9315:9315",
+    "--publish=0.0.0.0:5173:5173"
+  ],
+  "containerEnv": {
+    "CLAUDE_CONFIG_DIR": "/claude-persist/.claude",
+    "GH_CONFIG_DIR": "/home/dev/.config/gh-runtime",
+    "GIT_CONFIG_GLOBAL": "/home/dev/.gitconfig-runtime"
+  },
+  "mounts": [
+    "source=acp-demo-claude-persist,target=/claude-persist,type=volume",
+    "source=${localEnv:HOME}/.claude,target=/claude-host,type=bind,readonly",
+    "source=${localEnv:HOME}/.claude.json,target=/claude-host-state.json,type=bind,readonly",
+    "source=${localEnv:HOME}/.config/gh,target=/gh-host,type=bind,readonly",
+    "source=${localEnv:HOME}/.gitconfig,target=/home/dev/.gitconfig-host,type=bind,readonly"
+  ],
+  "portsAttributes": {
+    "9315": {
+      "label": "chrome-acp proxy",
+      "onAutoForward": "notify"
+    },
+    "5173": {
+      "label": "ACP Web UI",
+      "onAutoForward": "notify"
+    }
+  },
+  "postCreateCommand": "sudo chown -R dev:dev /workspaces/acp_demo /claude-persist 2>/dev/null || true",
+  "postStartCommand": "sudo chown -R dev:dev /workspaces/acp_demo /claude-persist 2>/dev/null; /workspaces/acp_demo/.devcontainer/scripts/bootstrap-claude.sh && /workspaces/acp_demo/.devcontainer/scripts/bootstrap-vcs.sh",
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash"
+      }
+    }
+  }
+}
